@@ -113,4 +113,4 @@ Network Monitor/
 └── README.md            # Этот файл
 ```
 
-Для запуска без установки запустить NetworkMonitor.exe
+Для запуска без установки [Python] запустить NetworkMonitor.exe
