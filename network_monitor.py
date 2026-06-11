@@ -56,3 +56,23 @@ def parse_network_range(text: str) -> list[ipaddress.IPv4Address]:
         return hosts
 
     return [ipaddress.IPv4Address(text)]
+
+def ping_host(ip: str) -> bool:
+    system = platform.system().lower()
+    if system == "windows":
+        cmd = ["ping", "-n", "1", "-w", str(PING_TIMEOUT_MS), ip]
+    else:
+        sec = max(1, PING_TIMEOUT_MS // 1000)
+        cmd = ["ping", "-c", "1", "-W", str(sec), ip]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=(PING_TIMEOUT_MS / 1000) + 2,
+            creationflags=subprocess.CREATE_NO_WINDOW if system == "windows" else 0,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, OSError):
+        return False
