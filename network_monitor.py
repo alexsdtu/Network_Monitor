@@ -16,7 +16,7 @@ PING_TIMEOUT_MS = 1000
 MAX_WORKERS = 64
 FAILURES_BEFORE_LOST = 2
 
-
+@dataclass
 class HostState:
     last_seen: datetime | None = None
     consecutive_failures: int = 0
@@ -31,6 +31,7 @@ class HostState:
         self.consecutive_failures += 1
         if self.consecutive_failures >= FAILURES_BEFORE_LOST:
             self.lost = True
+            
 
 def parse_network_range(text: str) -> list[ipaddress.IPv4Address]:
     text = text.strip()
@@ -56,6 +57,7 @@ def parse_network_range(text: str) -> list[ipaddress.IPv4Address]:
         return hosts
 
     return [ipaddress.IPv4Address(text)]
+    
 
 def ping_host(ip: str) -> bool:
     system = platform.system().lower()
@@ -76,6 +78,7 @@ def ping_host(ip: str) -> bool:
         return result.returncode == 0
     except (subprocess.TimeoutExpired, OSError):
         return False
+        
 
 def scan_hosts(
     addresses: list[ipaddress.IPv4Address],
@@ -98,6 +101,7 @@ def scan_hosts(
                 on_progress(done, total)
 
     return results
+    
 
 class NetworkMonitorApp:
     def __init__(self, root: tk.Tk) -> None:
@@ -114,7 +118,7 @@ class NetworkMonitorApp:
 
         self._build_ui()
 
-def _build_ui(self) -> None:
+    def _build_ui(self) -> None:
         top = ttk.Frame(self.root, padding=10)
         top.pack(fill=tk.X)
 
@@ -180,7 +184,7 @@ def _build_ui(self) -> None:
             f"(≥{FAILURES_BEFORE_LOST}) | Интервал: {SCAN_INTERVAL_SEC} с",
         ).pack(anchor=tk.W)
 
-def start_monitoring(self) -> None:
+    def start_monitoring(self) -> None:
         try:
             self._addresses = parse_network_range(self.range_var.get())
         except ValueError as exc:
@@ -194,14 +198,14 @@ def start_monitoring(self) -> None:
             ):
                 return
 
-self._hosts.clear()
+        self._hosts.clear()
         self._monitoring = True
         self.range_entry.config(state=tk.DISABLED)
         self.start_btn.config(state=tk.DISABLED)
         self.stop_btn.config(state=tk.NORMAL)
         self._run_scan_cycle()
 
-def stop_monitoring(self) -> None:
+    def stop_monitoring(self) -> None:
         self._monitoring = False
         if self._timer_id:
             self.root.after_cancel(self._timer_id)
@@ -212,13 +216,13 @@ def stop_monitoring(self) -> None:
         self.status_var.set("Остановлено")
         self.progress["value"] = 0
 
- def _schedule_next_scan(self) -> None:
+    def _schedule_next_scan(self) -> None:
         if self._monitoring:
             self._timer_id = self.root.after(
                 SCAN_INTERVAL_SEC * 1000, self._run_scan_cycle
 
-
-def _run_scan_cycle(self) -> None:
+            )
+    def _run_scan_cycle(self) -> None:
         if not self._monitoring or self._scan_running:
             return
 
@@ -227,7 +231,7 @@ def _run_scan_cycle(self) -> None:
         self.progress["value"] = 0
         addresses = list(self._addresses)
 
-def worker() -> None:
+        def worker() -> None:
             def on_progress(done: int, total: int) -> None:
                 self.root.after(
                     0,
@@ -240,12 +244,12 @@ def worker() -> None:
         self._scan_thread = threading.Thread(target=worker, daemon=True)
         self._scan_thread.start()
 
-def _set_progress(self, done: int, total: int) -> None:
+    def _set_progress(self, done: int, total: int) -> None:
         if total:
             self.progress["maximum"] = total
             self.progress["value"] = done
 
-def _finish_scan(self, results: dict[str, bool]) -> None:
+    def _finish_scan(self, results: dict[str, bool]) -> None:
         now = datetime.now()
         for ip, alive in results.items():
             state = self._hosts.setdefault(ip, HostState())
@@ -268,7 +272,7 @@ def _finish_scan(self, results: dict[str, bool]) -> None:
         else:
             self.status_var.set("Остановлено")
 
-def _refresh_table(self, _: datetime) -> None:
+    def _refresh_table(self, _: datetime) -> None:
         for item in self.tree.get_children():
             self.tree.delete(item)
 
@@ -285,6 +289,8 @@ def _refresh_table(self, _: datetime) -> None:
 
         for ip, status, last, tag in rows:
             self.tree.insert("", tk.END, values=(ip, status, last), tags=(tag,))
+
+
 def main() -> None:
     root = tk.Tk()
     try:
@@ -293,6 +299,7 @@ def main() -> None:
         pass
     NetworkMonitorApp(root)
     root.mainloop()
+    
 
 if __name__ == "__main__":
     main()
