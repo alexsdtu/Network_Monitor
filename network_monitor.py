@@ -239,3 +239,8 @@ def worker() -> None:
 
         self._scan_thread = threading.Thread(target=worker, daemon=True)
         self._scan_thread.start()
+
+def _set_progress(self, done: int, total: int) -> None:
+        if total:
+            self.progress["maximum"] = total
+            self.progress["value"] = done
