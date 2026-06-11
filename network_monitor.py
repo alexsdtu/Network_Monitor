@@ -179,3 +179,17 @@ def _build_ui(self) -> None:
             text="Зелёный — активен | Красный — недоступен после повторных проверок "
             f"(≥{FAILURES_BEFORE_LOST}) | Интервал: {SCAN_INTERVAL_SEC} с",
         ).pack(anchor=tk.W)
+
+def start_monitoring(self) -> None:
+        try:
+            self._addresses = parse_network_range(self.range_var.get())
+        except ValueError as exc:
+            messagebox.showerror("Ошибка диапазона", str(exc))
+            return
+
+        if len(self._addresses) > 1024:
+            if not messagebox.askyesno(
+                "Подтверждение",
+                f"Будет проверено {len(self._addresses)} адресов. Продолжить?",
+            ):
+                return
