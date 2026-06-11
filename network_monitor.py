@@ -76,3 +76,25 @@ def ping_host(ip: str) -> bool:
         return result.returncode == 0
     except (subprocess.TimeoutExpired, OSError):
         return False
+
+def scan_hosts(
+    addresses: list[ipaddress.IPv4Address],
+    on_progress: Callable[[int, int], None] | None = None,
+) -> dict[str, bool]:
+    total = len(addresses)
+    results: dict[str, bool] = {}
+    done = 0
+
+    with ThreadPoolExecutor(max_workers=min(MAX_WORKERS, total or 1)) as pool:
+        futures = {pool.submit(ping_host, str(ip)): str(ip) for ip in addresses}
+        for future in as_completed(futures):
+            ip = futures[future]
+            try:
+                results[ip] = future.result()
+            except Exception:
+                results[ip] = False
+            done += 1
+            if on_progress:
+                on_progress(done, total)
+
+    return results
