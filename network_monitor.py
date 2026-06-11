@@ -98,3 +98,18 @@ def scan_hosts(
                 on_progress(done, total)
 
     return results
+
+class NetworkMonitorApp:
+    def __init__(self, root: tk.Tk) -> None:
+        self.root = root
+        self.root.title("Network Monitor")
+        self.root.minsize(720, 480)
+
+        self._hosts: dict[str, HostState] = {}
+        self._addresses: list[ipaddress.IPv4Address] = []
+        self._monitoring = False
+        self._scan_running = False
+        self._timer_id: str | None = None
+        self._scan_thread: threading.Thread | None = None
+
+        self._build_ui()
