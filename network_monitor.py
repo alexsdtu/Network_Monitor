@@ -200,3 +200,14 @@ self._hosts.clear()
         self.start_btn.config(state=tk.DISABLED)
         self.stop_btn.config(state=tk.NORMAL)
         self._run_scan_cycle()
+
+def stop_monitoring(self) -> None:
+        self._monitoring = False
+        if self._timer_id:
+            self.root.after_cancel(self._timer_id)
+            self._timer_id = None
+        self.range_entry.config(state=tk.NORMAL)
+        self.start_btn.config(state=tk.NORMAL)
+        self.stop_btn.config(state=tk.DISABLED)
+        self.status_var.set("Остановлено")
+        self.progress["value"] = 0
