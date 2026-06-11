@@ -113,3 +113,69 @@ class NetworkMonitorApp:
         self._scan_thread: threading.Thread | None = None
 
         self._build_ui()
+
+def _build_ui(self) -> None:
+        top = ttk.Frame(self.root, padding=10)
+        top.pack(fill=tk.X)
+
+        ttk.Label(top, text="Диапазон сети:").pack(side=tk.LEFT)
+        self.range_var = tk.StringVar(value="192.168.1.0/24")
+        self.range_entry = ttk.Entry(top, textvariable=self.range_var, width=28)
+        self.range_entry.pack(side=tk.LEFT, padx=(8, 4))
+
+        hint = ttk.Label(
+            top,
+            text="(CIDR, IP-IP или один IP)",
+            foreground="#666",
+        )
+        hint.pack(side=tk.LEFT)
+
+        buttons = ttk.Frame(self.root, padding=(10, 0, 10, 10))
+        buttons.pack(fill=tk.X)
+
+        self.start_btn = ttk.Button(buttons, text="Старт", command=self.start_monitoring)
+        self.start_btn.pack(side=tk.LEFT)
+        self.stop_btn = ttk.Button(
+            buttons, text="Стоп", command=self.stop_monitoring, state=tk.DISABLED
+        )
+        self.stop_btn.pack(side=tk.LEFT, padx=8)
+
+        self.status_var = tk.StringVar(value="Остановлено")
+        ttk.Label(buttons, textvariable=self.status_var).pack(side=tk.LEFT, padx=12)
+
+        self.progress = ttk.Progressbar(self.root, mode="determinate")
+        self.progress.pack(fill=tk.X, padx=10, pady=(0, 8))
+
+        table_frame = ttk.Frame(self.root, padding=10)
+        table_frame.pack(fill=tk.BOTH, expand=True)
+
+        columns = ("ip", "status", "last_activity")
+        self.tree = ttk.Treeview(
+            table_frame,
+            columns=columns,
+            show="headings",
+            selectmode="browse",
+        )
+        self.tree.heading("ip", text="IP-адрес")
+        self.tree.heading("status", text="Статус")
+        self.tree.heading("last_activity", text="Последняя активность")
+
+        self.tree.column("ip", width=160, anchor=tk.W)
+        self.tree.column("status", width=200, anchor=tk.W)
+        self.tree.column("last_activity", width=220, anchor=tk.W)
+
+        scroll = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scroll.set)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.tree.tag_configure("active", foreground="#1a7f37")
+        self.tree.tag_configure("lost", foreground="#c41e3a")
+
+        legend = ttk.Frame(self.root, padding=(10, 0, 10, 10))
+        legend.pack(fill=tk.X)
+        ttk.Label(
+            legend,
+            text="Зелёный — активен | Красный — недоступен после повторных проверок "
+            f"(≥{FAILURES_BEFORE_LOST}) | Интервал: {SCAN_INTERVAL_SEC} с",
+        ).pack(anchor=tk.W)
