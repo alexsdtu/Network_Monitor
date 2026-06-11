@@ -216,3 +216,13 @@ def stop_monitoring(self) -> None:
         if self._monitoring:
             self._timer_id = self.root.after(
                 SCAN_INTERVAL_SEC * 1000, self._run_scan_cycle
+
+
+def _run_scan_cycle(self) -> None:
+        if not self._monitoring or self._scan_running:
+            return
+
+        self._scan_running = True
+        self.status_var.set("Сканирование…")
+        self.progress["value"] = 0
+        addresses = list(self._addresses)
