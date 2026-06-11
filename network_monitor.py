@@ -244,3 +244,26 @@ def _set_progress(self, done: int, total: int) -> None:
         if total:
             self.progress["maximum"] = total
             self.progress["value"] = done
+
+def _finish_scan(self, results: dict[str, bool]) -> None:
+        now = datetime.now()
+        for ip, alive in results.items():
+            state = self._hosts.setdefault(ip, HostState())
+            if alive:
+                state.mark_alive()
+            elif state.last_seen is not None:
+                state.mark_dead()
+
+        self._refresh_table(now)
+        self._scan_running = False
+
+        if self._monitoring:
+            active = sum(1 for ip, s in self._hosts.items() if results.get(ip))
+            lost = sum(1 for s in self._hosts.values() if s.lost)
+            self.status_var.set(
+                f"Обновлено {now:%H:%M:%S} | активных: {active} | потеряно: {lost} | "
+                f"след. через {SCAN_INTERVAL_SEC} с"
+            )
+            self._schedule_next_scan()
+        else:
+            self.status_var.set("Остановлено")
