@@ -226,3 +226,16 @@ def _run_scan_cycle(self) -> None:
         self.status_var.set("Сканирование…")
         self.progress["value"] = 0
         addresses = list(self._addresses)
+
+def worker() -> None:
+            def on_progress(done: int, total: int) -> None:
+                self.root.after(
+                    0,
+                    lambda: self._set_progress(done, total),
+                )
+
+            results = scan_hosts(addresses, on_progress=on_progress)
+            self.root.after(0, lambda: self._finish_scan(results))
+
+        self._scan_thread = threading.Thread(target=worker, daemon=True)
+        self._scan_thread.start()
