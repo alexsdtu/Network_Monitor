@@ -285,4 +285,11 @@ def _refresh_table(self, _: datetime) -> None:
 
         for ip, status, last, tag in rows:
             self.tree.insert("", tk.END, values=(ip, status, last), tags=(tag,))
-
+def main() -> None:
+    root = tk.Tk()
+    try:
+        ttk.Style().theme_use("vista")
+    except tk.TclError:
+        pass
+    NetworkMonitorApp(root)
+    root.mainloop()
