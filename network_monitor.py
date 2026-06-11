@@ -212,4 +212,7 @@ def stop_monitoring(self) -> None:
         self.status_var.set("Остановлено")
         self.progress["value"] = 0
 
-
+ def _schedule_next_scan(self) -> None:
+        if self._monitoring:
+            self._timer_id = self.root.after(
+                SCAN_INTERVAL_SEC * 1000, self._run_scan_cycle
