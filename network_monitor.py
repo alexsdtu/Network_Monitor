@@ -211,3 +211,5 @@ def stop_monitoring(self) -> None:
         self.stop_btn.config(state=tk.DISABLED)
         self.status_var.set("Остановлено")
         self.progress["value"] = 0
+
+
