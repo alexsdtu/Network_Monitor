@@ -31,3 +31,28 @@ class HostState:
         self.consecutive_failures += 1
         if self.consecutive_failures >= FAILURES_BEFORE_LOST:
             self.lost = True
+
+def parse_network_range(text: str) -> list[ipaddress.IPv4Address]:
+    text = text.strip()
+    if not text:
+        raise ValueError("Укажите диапазон сети")
+
+    if "-" in text and "/" not in text:
+        start_s, end_s = (p.strip() for p in text.split("-", 1))
+        start = ipaddress.IPv4Address(start_s)
+        end = ipaddress.IPv4Address(end_s)
+        if int(end) < int(start):
+            raise ValueError("Конечный IP меньше начального")
+        return [
+            ipaddress.IPv4Address(addr)
+            for addr in range(int(start), int(end) + 1)
+        ]
+
+    if "/" in text:
+        network = ipaddress.IPv4Network(text, strict=False)
+        hosts = list(network.hosts())
+        if not hosts and network.num_addresses <= 2:
+            return [ipaddress.IPv4Address(network.network_address)]
+        return hosts
+
+    return [ipaddress.IPv4Address(text)]
