@@ -193,3 +193,10 @@ def start_monitoring(self) -> None:
                 f"Будет проверено {len(self._addresses)} адресов. Продолжить?",
             ):
                 return
+
+self._hosts.clear()
+        self._monitoring = True
+        self.range_entry.config(state=tk.DISABLED)
+        self.start_btn.config(state=tk.DISABLED)
+        self.stop_btn.config(state=tk.NORMAL)
+        self._run_scan_cycle()
