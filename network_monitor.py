@@ -267,3 +267,22 @@ def _finish_scan(self, results: dict[str, bool]) -> None:
             self._schedule_next_scan()
         else:
             self.status_var.set("Остановлено")
+
+def _refresh_table(self, _: datetime) -> None:
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        rows: list[tuple[str, str, str, str]] = []
+
+        for ip in sorted(self._hosts.keys(), key=lambda x: ipaddress.IPv4Address(x)):
+            state = self._hosts[ip]
+            if state.lost:
+                last = state.last_seen.strftime("%Y-%m-%d %H:%M:%S") if state.last_seen else "—"
+                rows.append((ip, "Недоступен (потерян)", last, "lost"))
+            elif state.last_seen is not None and not state.lost:
+                last = state.last_seen.strftime("%Y-%m-%d %H:%M:%S")
+                rows.append((ip, "Активен", last, "active"))
+
+        for ip, status, last, tag in rows:
+            self.tree.insert("", tk.END, values=(ip, status, last), tags=(tag,))
+
